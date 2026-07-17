@@ -1,30 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anam AI</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      background: #111;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Video Call</title>
 
-    anam-agent {
-      width: 420px;
-      height: 700px;
-    }
-  </style>
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+}
+
+anam-agent {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    display: block;
+}
+</style>
 </head>
+
 <body>
 
-<anam-agent agent-id="d30e7ed8-8ef5-4035-9813-668360aa8c2b" ui-transcript="false"></anam-agent>
+<anam-agent
+    agent-id="55e78e41-f0c0-4090-8281-43c91a269912"
+    ui-transcript="false">
+</anam-agent>
 
 <script src="https://unpkg.com/@anam-ai/agent-widget" async></script>
 

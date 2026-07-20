@@ -1,47 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Video Call</title>
-<link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sara AI - Live Avatar</title>
+ <link rel="manifest" href="manifest.json">
+ <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-<meta name="theme-color" content="#000000">
+    body {
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Sara">
+    h1 { margin-bottom: 16px; font-size: 24px; }
 
-<link rel="apple-touch-icon" href="icon-192.PNG">
+    /* Portrait video container */
+    .video-wrapper {
+      width: 320px;
+      height: 480px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #222;
+    }
 
-<style>
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #000;
-}
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
-anam-agent {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    display: block;
-}
-</style>
+    #status {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #aaa;
+    }
+
+    .buttons { margin-top: 16px; display: flex; gap: 10px; }
+
+    button {
+      padding: 10px 24px;
+      font-size: 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #fff;
+      color: #111;
+      font-weight: bold;
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    #stop-button { background: #e74c3c; color: #fff; }
+  </style>
 </head>
-
 <body>
 
-<anam-agent
-    agent-id="9b08b8bf-32c8-4400-969c-2811ed8020d7"
-    ui-transcript="false">
-</anam-agent>
+  <h1>Chat with Sara </h1>
 
-<script src="https://unpkg.com/@anam-ai/agent-widget" async></script>
+  <div class="video-wrapper">
+    <video id="persona-video" autoplay playsinline></video>
+  </div>
+
+  <div id="status">Press Start to connect</div>
+
+  <div class="buttons">
+    <button id="start-button">Start Chat</button>
+    <button id="stop-button" disabled>Stop Chat</button>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@anam-ai/js-sdk@latest";
+
+    const API_KEY = "MTZlZmVkY2ItOWY2ZC00Y2IzLWE2YTktNDI1MjFhMTU0MDhjOmkySk9XQVRVcjg0RnU1bTN1cGlyenlsR2JZVTVkNXhURzZJZGJqdGYxVzQ9";
+
+    const videoEl = document.getElementById("persona-video");
+    const statusEl = document.getElementById("status");
+    const startBtn = document.getElementById("start-button");
+    const stopBtn = document.getElementById("stop-button");
+
+    let anamClient = null;
+
+    async function getSessionToken() {
+      const response = await fetch("https://api.anam.ai/v1/auth/session-token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${API_KEY}`,
+        },
+        body: JSON.stringify({
+          personaConfig: {
+            name: "Sara",
+            avatarId: "3a27a878-6ee8-4546-8668-360221989d7a",
+            avatarModel: "cara-4",
+            voiceId: "5bbc3ec7-c1ac-472b-9af6-a6e81e07cd5a",
+            llmId: "89649f1a-feb2-4fea-be43-56baec997a93",
+            systemPrompt: "You are a digital clone of Sara novo. Speak naturally and stay true to how Sara novo talks.",
+          },
+          sessionOptions: {
+            videoWidth: 768,
+            videoHeight: 1152,   // Portrait mode
+            videoQuality: "high",
+          },
+        }),
+      });
+
+      if (!response.ok) throw new Error(`Token error: ${response.status}`);
+      const data = await response.json();
+      return data.sessionToken;
+    }
+
+    async function startChat() {
+      try {
+        startBtn.disabled = true;
+        statusEl.textContent = "Connecting...";
+
+        const token = await getSessionToken();
+        anamClient = createClient(token);
+        await anamClient.streamToVideoElement("persona-video");
+
+        stopBtn.disabled = false;
+        statusEl.textContent = "Connected — start speaking!";
+      } catch (err) {
+        statusEl.textContent = `Error: ${err.message}`;
+        startBtn.disabled = false;
+      }
+    }
+
+    function stopChat() {
+      if (anamClient) {
+        anamClient.stopStreaming();
+        anamClient = null;
+      }
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      statusEl.textContent = "Chat ended";
+    }
+
+    startBtn.addEventListener("click", startChat);
+    stopBtn.addEventListener("click", stopChat);
+  </script>
 
 </body>
-</html>
+</html> 
